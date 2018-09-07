@@ -24,11 +24,17 @@
 #include "keyboard.h"
 #include "proto.h"
 
-PRIVATE struct inode * create_file(char * path, int flags);
+PRIVATE struct inode * create_file(char * path, int flags,u32 mode);
 PRIVATE int alloc_imap_bit(int dev);
 PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc);
-PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect);
+PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect,u32 mode);
 PRIVATE void new_dir_entry(struct inode * dir_inode, int inode_nr, char * filename);
+PUBLIC int do_open();
+
+PRIVATE void openDir(struct inode * pin)
+{
+    currentDir_inode=pin;
+}
 
 /*****************************************************************************
  *                                do_open
@@ -48,6 +54,9 @@ PUBLIC int do_open()
 	int flags = fs_msg.FLAGS;	/* access mode */
 	int name_len = fs_msg.NAME_LEN;	/* length of filename */
 	int src = fs_msg.source;	/* caller proc nr. */
+	int mode =fs_msg.MODE;
+	
+	
 	assert(name_len < MAX_PATH);
 	phys_copy((void*)va2la(TASK_FS, pathname),
 		  (void*)va2la(src, fs_msg.PATHNAME),
@@ -75,13 +84,14 @@ PUBLIC int do_open()
 	int inode_nr = search_file(pathname);
 
 	struct inode * pin = 0;
+	//创建
 	if (flags & O_CREAT) {
 		if (inode_nr) {
 			printl("file exists.\n");
 			return -1;
 		}
 		else {
-			pin = create_file(pathname, flags);
+			pin = create_file(pathname, flags,mode);
 		}
 	}
 	else {
@@ -95,6 +105,8 @@ PUBLIC int do_open()
 	}
 
 	if (pin) {
+		
+		
 		/* connects proc with file_descriptor */
 		pcaller->filp[fd] = &f_desc_table[i];
 
@@ -119,7 +131,9 @@ PUBLIC int do_open()
 				  &driver_msg);
 		}
 		else if (imode == I_DIRECTORY) {
-			assert(pin->i_num == ROOT_INODE);
+			//打开文件夹
+			assert(mode==I_DIRECTORY);
+		openDir(pin);
 		}
 		else {
 			assert(pin->i_mode == I_REGULAR);
@@ -148,7 +162,7 @@ PUBLIC int do_open()
  *
  * @todo return values of routines called, return values of self.
  *****************************************************************************/
-PRIVATE struct inode * create_file(char * path, int flags)
+PRIVATE struct inode * create_file(char * path, int flags,u32 mode)
 {
 	char filename[MAX_PATH];
 	struct inode * dir_inode;
@@ -159,12 +173,23 @@ PRIVATE struct inode * create_file(char * path, int flags)
 	int free_sect_nr = alloc_smap_bit(dir_inode->i_dev,
 					  NR_DEFAULT_FILE_SECTS);
 	struct inode *newino = new_inode(dir_inode->i_dev, inode_nr,
-					 free_sect_nr);
+					 free_sect_nr,mode);
 
 	new_dir_entry(dir_inode, newino->i_num, filename);
 
 	return newino;
 }
+
+//返回上一菜单
+PUBLIC int back()
+{
+	
+
+	return 0;
+}
+
+
+
 
 /*****************************************************************************
  *                                do_close
@@ -338,11 +363,11 @@ PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
  * 
  * @return  Ptr of the new i-node.
  *****************************************************************************/
-PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect)
+PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect,u32 mode)
 {
 	struct inode * new_inode = get_inode(dev, inode_nr);
 
-	new_inode->i_mode = I_REGULAR;
+	new_inode->i_mode = mode;
 	new_inode->i_size = 0;
 	new_inode->i_start_sect = start_sect;
 	new_inode->i_nr_sects = NR_DEFAULT_FILE_SECTS;

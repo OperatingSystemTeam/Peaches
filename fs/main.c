@@ -161,8 +161,10 @@ PRIVATE void init_fs()
 
 	sb = get_super_block(ROOT_DEV);
 	assert(sb->magic == MAGIC_V1);
-
+	
 	root_inode = get_inode(ROOT_DEV, ROOT_INODE);
+	currentDir_inode=root_inode;
+	
 }
 
 /*****************************************************************************
@@ -209,6 +211,7 @@ PRIVATE void mkfs()
 	sb.n_1st_sect	  = 1 + 1 +   /* boot sector & super block */
 		sb.nr_imap_sects + sb.nr_smap_sects + sb.nr_inode_sects;
 	sb.root_inode	  = ROOT_INODE;
+	sb.currentDir_inode=ROOT_INODE;
 	sb.inode_size	  = INODE_SIZE;
 	struct inode x;
 	sb.inode_isize_off= (int)&x.i_size - (int)&x;

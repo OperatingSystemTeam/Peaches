@@ -30,6 +30,8 @@ struct dev_drv_map {
  *
  * Remember to change SUPER_BLOCK_SIZE if the members are changed.
  */
+
+
 struct super_block {
 	u32	magic;		  /**< Magic number */
 	u32	nr_inodes;	  /**< How many inodes */
@@ -39,6 +41,7 @@ struct super_block {
 	u32	n_1st_sect;	  /**< Number of the 1st data sector */
 	u32	nr_inode_sects;   /**< How many inode sectors */
 	u32	root_inode;       /**< Inode nr of root directory */
+	u32 currentDir_inode;
 	u32	inode_size;       /**< INODE_SIZE */
 	u32	inode_isize_off;  /**< Offset of `struct inode::i_size' */
 	u32	inode_start_off;  /**< Offset of `struct inode::i_start_sect' */
@@ -148,3 +151,6 @@ struct file_desc {
 
 	
 #endif /* _ORANGES_FS_H_ */
+
+
+

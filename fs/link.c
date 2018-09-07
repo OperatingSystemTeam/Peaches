@@ -207,7 +207,7 @@ PRIVATE void cleanDir(struct inode * dir_inode)
 		pde = (struct dir_entry *)fsbuf;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
 			
-			do_unlink2(pde->inode_nr,pde->name);
+			do_unlink2(pde->inode_nr,dir_inode,pde->name);
 			
 			if (++m > nr_dir_entries)
 				break;

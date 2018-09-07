@@ -118,7 +118,15 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 		return -1;
 
 	if (*s == '/')
-		s++;
+	{
+     s++;
+	 *ppinode = root_inode;
+	}
+	else 
+	{
+		*ppinode = currentDir_inode;
+	}
+		
 
 	while (*s) {		/* check each character */
 		if (*s == '/')
@@ -130,7 +138,7 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	}
 	*t = 0;
 
-	*ppinode = root_inode;
+	
 
 	return 0;
 }

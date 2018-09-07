@@ -129,10 +129,11 @@ PUBLIC int get_ticks()
  *======================================================================*/
 void TestA()
 {
+	int dir;
 	int fd;
 	int i, n;
 
-	char filename[MAX_FILENAME_LEN+1] = "blah";
+	char filename[MAX_FILENAME_LEN+1] = "blaa";
 	const char bufw[] = "abcde";
 	const int rd_bytes = 3;
 	char bufr[rd_bytes];
@@ -140,6 +141,10 @@ void TestA()
 	assert(rd_bytes <= strlen(bufw));
 
 	/* create */
+	dir = openDir(filename, O_CREAT | O_RDWR);
+	assert(dir != -1);
+	printf("File created: %s (fd %d)\n", filename, fd);
+
 	fd = open(filename, O_CREAT | O_RDWR);
 	assert(fd != -1);
 	printf("File created: %s (fd %d)\n", filename, fd);
@@ -165,9 +170,9 @@ void TestA()
 	/* close */
 	close(fd);
 
-	char * filenames[] = {"/foo", "/bar", "/baz"};
+	/*char * filenames[] = {"/foo", "/bar", "/baz"};
 
-	/* create files */
+	/* create files 
 	for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
 		fd = open(filenames[i], O_CREAT | O_RDWR);
 		assert(fd != -1);
@@ -177,15 +182,15 @@ void TestA()
 
 	char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
 
-	/* remove files */
+	/* remove files 
 	for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
 		if (unlink(rfilenames[i]) == 0)
 			printf("File removed: %s\n", rfilenames[i]);
 		else
 			printf("Failed to remove file: %s\n", rfilenames[i]);
 	}
-
-	spin("TestA");
+*/
+	spin("TestP");
 }
 
 /*======================================================================*
@@ -193,6 +198,7 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
+	
 	char tty_name[] = "/dev_tty1";
 
 	int fd_stdin  = open(tty_name, O_RDWR);
@@ -221,6 +227,7 @@ void TestB()
 
 	assert(0); /* never arrive here */
 }
+
 
 /*======================================================================*
                                TestB
