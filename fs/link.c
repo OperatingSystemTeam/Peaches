@@ -20,60 +20,36 @@
 #include "keyboard.h"
 #include "proto.h"
 
-
-/*****************************************************************************
- *                                do_unlink
- *****************************************************************************/
-/**
- * Remove a file.
- *
- * @note We clear the i-node in inode_array[] although it is not really needed.
- *       We don't clear the data bytes so the file is recoverable.
- * 
- * @return On success, zero is returned.  On error, -1 is returned.
- *****************************************************************************/
-PUBLIC int do_unlink()
+PRIVATE int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH])
 {
-	char pathname[MAX_PATH];
-
-	/* get parameters from the message */
-	int name_len = fs_msg.NAME_LEN;	/* length of filename */
-	int src = fs_msg.source;	/* caller proc nr. */
-	assert(name_len < MAX_PATH);
-	phys_copy((void*)va2la(TASK_FS, pathname),
-		  (void*)va2la(src, fs_msg.PATHNAME),
-		  name_len);
-	pathname[name_len] = 0;
-
-	if (strcmp(pathname , "/") == 0) {
-		printl("FS:do_unlink():: cannot unlink the root\n");
+    if (inode_nr == INVALID_INODE) {	/* file not found */
+		printl("FS::do_unlink2() returns "
+			"invalid inode\n");
 		return -1;
 	}
 
-	int inode_nr = search_file(pathname);
-	if (inode_nr == INVALID_INODE) {	/* file not found */
-		printl("FS::do_unlink():: search_file() returns "
-			"invalid inode: %s\n", pathname);
-		return -1;
-	}
 
-	char filename[MAX_PATH];
-	struct inode * dir_inode;
-	if (strip_path(filename, pathname, &dir_inode) != 0)
-		return -1;
 
 	struct inode * pin = get_inode(dir_inode->i_dev, inode_nr);
 
 	if (pin->i_mode != I_REGULAR) { /* can only remove regular files */
-		printl("cannot remove file %s, because "
+	    if(pin->i_mode == I_DIRECTORY)
+		{
+			cleanDir(pin);
+		}
+		else
+		{
+			printl("cannot remove file %s, because "
 		       "it is not a regular file.\n",
-		       pathname);
+		       filename);
 		return -1;
+		}
+		
 	}
 
 	if (pin->i_cnt > 1) {	/* the file was opened */
 		printl("cannot remove file %s, because pin->i_cnt is %d.\n",
-		       pathname, pin->i_cnt);
+		       filename, pin->i_cnt);
 		return -1;
 	}
 
@@ -207,4 +183,83 @@ PUBLIC int do_unlink()
 	}
 
 	return 0;
+}
+
+PRIVATE void cleanDir(struct inode * dir_inode)
+{
+	int i, j;
+
+	/**
+	 * Search the dir for the file.
+	 */
+	int dir_blk0_nr = dir_inode->i_start_sect;
+	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries =
+	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
+					       * including unused slots
+					       * (the file has been deleted
+					       * but the slot is still there)
+					       */
+	int m = 0;
+	struct dir_entry * pde;
+	for (i = 0; i < nr_dir_blks; i++) {
+		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry *)fsbuf;
+		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
+			
+			do_unlink2(pde->inode_nr,pde->name);
+			
+			if (++m > nr_dir_entries)
+				break;
+		}
+		if (m > nr_dir_entries) /* all entries have been iterated */
+			break;
+	}
+
+	/* file not found */
+	return 0;
+}
+/*****************************************************************************
+ *                                do_unlink
+ *****************************************************************************/
+/**
+ * Remove a file.
+ *
+ * @note We clear the i-node in inode_array[] although it is not really needed.
+ *       We don't clear the data bytes so the file is recoverable.
+ * 
+ * @return On success, zero is returned.  On error, -1 is returned.
+ *****************************************************************************/
+PUBLIC int do_unlink()
+{
+	char pathname[MAX_PATH];
+
+	/* get parameters from the message */
+	int name_len = fs_msg.NAME_LEN;	/* length of filename */
+	int src = fs_msg.source;	/* caller proc nr. */
+	assert(name_len < MAX_PATH);
+	phys_copy((void*)va2la(TASK_FS, pathname),
+		  (void*)va2la(src, fs_msg.PATHNAME),
+		  name_len);
+	pathname[name_len] = 0;
+
+	if (strcmp(pathname , "/") == 0) {
+		printl("FS:do_unlink():: cannot unlink the root\n");
+		return -1;
+	}
+	
+
+	int inode_nr = search_file(pathname);
+	if (inode_nr == INVALID_INODE) {	/* file not found */
+		printl("FS::do_unlink():: search_file() returns "
+			"invalid inode: %s\n", pathname);
+		return -1;
+	}
+
+	char filename[MAX_PATH];
+	struct inode * dir_inode;
+	if (strip_path(filename, pathname, &dir_inode) != 0)
+		return -1;
+
+	do_unlink2(inode_nr,dir_inode,filename);
 }
