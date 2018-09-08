@@ -30,13 +30,11 @@ PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc);
 PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect,u32 mode);
 PRIVATE void new_dir_entry(struct inode * dir_inode, int inode_nr, char * filename);
 PUBLIC int do_open();
-int do_open2();
 
 PRIVATE void openDir(struct inode * pin)
 {
     currentDir_inode=pin;
 }
- 
 
 /*****************************************************************************
  *                                do_open
@@ -83,16 +81,6 @@ PUBLIC int do_open()
 	if (i >= NR_FILE_DESC)
 		panic("f_desc_table[] is full (PID:%d)", proc2pid(pcaller));
 
-    //不可以根据绝对路径创建！！
-    if (flags & O_CREAT)
-	{
-		
-		if(pathname[0]=='/')
-		{
-			assert(pathname[0]=='/');
-		    return -1;
-		}
-	}
 	int inode_nr = search_file(pathname);
 
 	struct inode * pin = 0;
@@ -145,8 +133,7 @@ PUBLIC int do_open()
 		else if (imode == I_DIRECTORY) {
 			//打开文件夹
 			assert(mode==I_DIRECTORY);
-			openDir(pin);
-			printf("Open dir\n");
+		openDir(pin);
 		}
 		else {
 			assert(pin->i_mode == I_REGULAR);

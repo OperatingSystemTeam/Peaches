@@ -24,8 +24,6 @@
 #include "hd.h"
 #include "fs.h"
 
-PUBLIC int strip_path_from_root(char * filename, const char * pathname,struct inode** ppinode);
-
 /*****************************************************************************
  *                                search_file
  *****************************************************************************/
@@ -121,13 +119,14 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 
 	if (*s == '/')
 	{
-		//处理
-		return strip_path_from_root(filename,pathname,ppinode);
+     s++;
+	 *ppinode = root_inode;
 	}
 	else 
 	{
 		*ppinode = currentDir_inode;
 	}
+		
 
 	while (*s) {		/* check each character */
 		if (*s == '/')
@@ -139,51 +138,8 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	}
 	*t = 0;
 
+	
+
 	return 0;
 }
-
-PUBLIC int strip_path_from_root(char * filename, const char * pathname,struct inode** ppinode)
-{
-	const char * s = pathname;
-	char * t = filename;
-	currentDir_inode=root_inode;
-	*ppinode=currentDir_inode;
-	if (*s == '/')
-	{
-     s++;
-	}
-while (*s) {		/* check each character */
-		if (*s == '/')
-			{
-				*t = 0;
-				int inode_nr=search_file(filename);
-				if(inode_nr!=0)
-				{
-                    struct inode * pin = 0;
-					pin = get_inode(currentDir_inode->i_dev, inode_nr);
-					if(( pin->i_mode & I_TYPE_MASK)==I_DIRECTORY)
-					    currentDir_inode=pin;
-					else
-					    return -1;
-
-					t=(char *)filename;
-					memset(filename, 0, MAX_FILENAME_LEN);
-					s++;
-				}
-				else
-				   return -1;
-			}
-		if (*s == '/')
-			return -1;
-		*t++ = *s++;
-		/* if filename is too long, just truncate it */
-		if (t - filename >= MAX_FILENAME_LEN)
-			break;
-	}
-	*ppinode=currentDir_inode;
-	*t = 0;
-	return 0;
-}
-
-			
 
