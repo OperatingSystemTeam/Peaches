@@ -36,8 +36,6 @@ PRIVATE void openDir(struct inode * pin)
     currentDir_inode=pin;
 }
 
-
-
 /*****************************************************************************
  *                                do_open
  *****************************************************************************/
@@ -135,7 +133,7 @@ PUBLIC int do_open()
 		else if (imode == I_DIRECTORY) {
 			//打开文件夹
 			assert(mode==I_DIRECTORY);
-		    openDir(pin);
+		openDir(pin);
 		}
 		else {
 			assert(pin->i_mode == I_REGULAR);

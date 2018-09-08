@@ -24,8 +24,6 @@
 #include "hd.h"
 #include "fs.h"
 
-PUBLIC int strip_path_from_root(char * filename, const char * pathname,struct inode** ppinode);
-
 /*****************************************************************************
  *                                search_file
  *****************************************************************************/
@@ -38,7 +36,6 @@ PUBLIC int strip_path_from_root(char * filename, const char * pathname,struct in
  * @see open()
  * @see do_open()
  *****************************************************************************/
-
 PUBLIC int search_file(char * path)
 {
 	int i, j;
@@ -122,8 +119,8 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 
 	if (*s == '/')
 	{
-		//处理
-        return strip_path_from_root(filename,pathname,ppinode);
+     s++;
+	 *ppinode = root_inode;
 	}
 	else 
 	{
@@ -141,57 +138,8 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	}
 	*t = 0;
 
+	
 
 	return 0;
 }
 
-
-PUBLIC int strip_path_from_root(char * filename, const char * pathname,struct inode** ppinode)
-{
-	const char * s = pathname;
-	char * t = filename;
-
-	struct inode * pin = 0;
-    *ppinode=root_inode;
-
-	if (s == 0)
-		return -1;
-
-	if (*s == '/')
-	{
-        s++;
-	}
-
-	while (*s) {		/* check each character */
-		if (*s == '/')
-			{
-				*t = 0;
-				currentDir_inode=*ppinode;
-				int inode_nr = search_file(filename);
-				
-				if(inode_nr==0)//找不到
-				    return -1;
-                pin = get_inode(currentDir_inode->i_dev, inode_nr);
-				assert((pin->i_mode & I_TYPE_MASK)==I_DIRECTORY);
-				if((pin->i_mode & I_TYPE_MASK)==I_DIRECTORY)
-				    *ppinode=pin;
-				
-				else //不是文件夹
-				    return -1;
-
-				memset(filename, 0, MAX_FILENAME_LEN);
-				t=filename;
-				*s++;
-				
-
-			}
-		*t++ = *s++;
-
-		/* if filename is too long, just truncate it */
-		if (t - filename >= MAX_FILENAME_LEN)//???
-			break;
-	}
-	*t = 0;
-	return 0;
-}
-	  
