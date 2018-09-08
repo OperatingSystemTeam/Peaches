@@ -180,7 +180,7 @@ PUBLIC int strip_path_from_root(char * filename, const char * pathname,struct in
 				    return -1;
 
 				memset(filename, 0, MAX_FILENAME_LEN);
-				
+				t=filename;
 				*s++;
 				
 

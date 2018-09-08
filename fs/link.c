@@ -221,39 +221,6 @@ PUBLIC int do_unlink();
 	return 0;
 }
 
-<<<<<<< HEAD
-=======
-PRIVATE void cleanDir(struct inode * dir_inode)
-{
-	int i, j;
-
-	/**
-	 * Search the dir for the file.
-	 */
-	int dir_blk0_nr = dir_inode->i_start_sect;
-	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
-	int nr_dir_entries =
-	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
-					       * including unused slots
-					       * (the file has been deleted
-					       * but the slot is still there)
-					       */
-	int m = 0;
-	struct dir_entry * pde;
-	for (i = 0; i < nr_dir_blks; i++) {
-		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
-		pde = (struct dir_entry *)fsbuf;
-		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			
-			do_unlink2(pde->inode_nr,pde->name);
-			
-			if (++m > nr_dir_entries)
-				break;
-		}
-		if (m > nr_dir_entries) /* all entries have been iterated */
-			break;
-	}
->>>>>>> parent of c0f3abd... 1.01
 
 /*****************************************************************************
  *                                do_unlink
