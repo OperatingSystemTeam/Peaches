@@ -20,43 +20,7 @@
 #include "keyboard.h"
 #include "proto.h"
 
-int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH]);
-PUBLIC int do_unlink();
- void cleanDir(struct inode * dir_inode)
-{
-	int i, j;
-
-	/**
-	 * Search the dir for the file.
-	 */
-	int dir_blk0_nr = dir_inode->i_start_sect;
-	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
-	int nr_dir_entries =
-	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
-					       * including unused slots
-					       * (the file has been deleted
-					       * but the slot is still there)
-					       */
-	int m = 0;
-	struct dir_entry * pde;
-	for (i = 0; i < nr_dir_blks; i++) {
-		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
-		pde = (struct dir_entry *)fsbuf;
-		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			
-			do_unlink2(pde->inode_nr,dir_inode,pde->name);
-			
-			if (++m > nr_dir_entries)
-				break;
-		}
-		if (m > nr_dir_entries) /* all entries have been iterated */
-			break;
-	}
-
-	/* file not found */
-
-}
- int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH])
+PRIVATE int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH])
 {
     if (inode_nr == INVALID_INODE) {	/* file not found */
 		printl("FS::do_unlink2() returns "
@@ -68,7 +32,7 @@ PUBLIC int do_unlink();
 
 	struct inode * pin = get_inode(dir_inode->i_dev, inode_nr);
 
-	if (pin->i_mode != I_REGULAR) {
+	if (pin->i_mode != I_REGULAR) { /* can only remove regular files */
 	    if(pin->i_mode == I_DIRECTORY)
 		{
 			cleanDir(pin);
@@ -221,7 +185,40 @@ PUBLIC int do_unlink();
 	return 0;
 }
 
+PRIVATE void cleanDir(struct inode * dir_inode)
+{
+	int i, j;
 
+	/**
+	 * Search the dir for the file.
+	 */
+	int dir_blk0_nr = dir_inode->i_start_sect;
+	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries =
+	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
+					       * including unused slots
+					       * (the file has been deleted
+					       * but the slot is still there)
+					       */
+	int m = 0;
+	struct dir_entry * pde;
+	for (i = 0; i < nr_dir_blks; i++) {
+		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry *)fsbuf;
+		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
+			
+			do_unlink2(pde->inode_nr,dir_inode,pde->name);
+			
+			if (++m > nr_dir_entries)
+				break;
+		}
+		if (m > nr_dir_entries) /* all entries have been iterated */
+			break;
+	}
+
+	/* file not found */
+	return 0;
+}
 /*****************************************************************************
  *                                do_unlink
  *****************************************************************************/
@@ -233,7 +230,7 @@ PUBLIC int do_unlink();
  * 
  * @return On success, zero is returned.  On error, -1 is returned.
  *****************************************************************************/
-PUBLIC int do_unlink()//处理通信
+PUBLIC int do_unlink()
 {
 	char pathname[MAX_PATH];
 
@@ -264,5 +261,5 @@ PUBLIC int do_unlink()//处理通信
 	if (strip_path(filename, pathname, &dir_inode) != 0)
 		return -1;
 
-	return do_unlink2(inode_nr,dir_inode,filename);
+	do_unlink2(inode_nr,dir_inode,filename);
 }
