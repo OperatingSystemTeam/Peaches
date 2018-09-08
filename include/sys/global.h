@@ -49,6 +49,5 @@ extern	const int		FSBUF_SIZE;
 EXTERN	MESSAGE			fs_msg;
 EXTERN	struct proc *		pcaller;
 EXTERN	struct inode *		root_inode;
-EXTERN	struct inode *		currentDir_inode;
 extern	struct dev_drv_map	dd_map[];
 
