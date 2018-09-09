@@ -170,10 +170,10 @@ void TestA()
 	/* close */
 	close(fd);
 
-	char * filenames[] = {"foo", "bar", "baz"};
+	char * filenames[] = {"a","b"};
 
 	/* create files */
-	for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
+	for (i = 0; i < 2; i++) {
 		fd = open(filenames[i], O_CREAT | O_RDWR);
 		assert(fd != -1);
 		printf("File created: %s (fd %d)\n", filenames[i], fd);
@@ -190,10 +190,16 @@ void TestA()
 			printf("Failed to remove file: %s\n", rfilenames[i]);
 	}
 */
-dir = openDir("/", O_RDWR);
-	dir = unlink("/blaa");
-	assert(dir ==0);
-	printf("remove dir: blaa (fd %d)\n", dir);
+    dir = openDir("/", O_RDWR);
+	
+	fd = open("blaa/blaa",O_RDWR);
+	assert(fd !=-1);
+	printf("open: blaa (fd %d)\n", dir);
+	close(fd);
+
+	dir=unlink("/blaa");
+	assert(dir==0);
+	printf("remove\n");
 	
 	spin("TestA");
 }

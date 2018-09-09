@@ -38,6 +38,9 @@ PRIVATE void open_Dir(struct inode ** pin)
 	printl("openDir\n");
 }
 
+
+
+
 /*****************************************************************************
  *                                do_open
  *****************************************************************************/
@@ -90,7 +93,7 @@ PUBLIC int do_open()
 	//创建
 	if (flags & O_CREAT) {
 		if (inode_nr) {
-			printl("file exists.\n");
+			printl("file exists.%s\n",pathname);
 			return -1;
 		}
 		else {

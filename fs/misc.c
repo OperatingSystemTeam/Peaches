@@ -24,6 +24,8 @@
 #include "hd.h"
 #include "fs.h"
 
+void open_file(struct inode ** dir_inode,struct inode ** pin, char * filename);//父文件夹，所要打开的文件夹（一开始是空的），文件名
+
 /*****************************************************************************
  *                                search_file
  *****************************************************************************/
@@ -70,9 +72,11 @@ PUBLIC int search_file(char * path)
 		pde = (struct dir_entry *)fsbuf;
 		printl("search\n");
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			printl("%s\n",pde->name);
+			printl("%s %d\n",pde->name,pde->inode_nr);
 			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
-				return pde->inode_nr;
+				{
+					return pde->inode_nr;
+				}
 			if (++m > nr_dir_entries)
 				break;
 		}
@@ -124,19 +128,25 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 
 	if (*s == '/')
 	{
-		
-     s++;
-	 *ppinode = root_inode;
+		s++;
+		*ppinode = root_inode;
 	}
 	else 
 	{
 		*ppinode = currentDir_inode;
 	}
-		
+	//在此处解析	
 
 	while (*s) {		/* check each character */
 		if (*s == '/')
-			return -1;
+		{
+			*t = 0;
+			t=filename;
+			open_dir(ppinode,filename);
+			memset(filename, 0, MAX_FILENAME_LEN);
+			s++;
+		}
+			
 		*t++ = *s++;
 		/* if filename is too long, just truncate it */
 		if (t - filename >= MAX_FILENAME_LEN)
@@ -144,13 +154,51 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	}
 	*t = 0;
 
-	
-
 	return 0;
 }
 
-
-void strip_path2_from_root(const char * pathname)
+int open_dir(struct inode ** dir_inode,char * filename)
 {
+	int i,j;
+	int inode_nr=0;
+	int dir_blk0_nr = (*dir_inode)->i_start_sect;
+	printl("sector%d\n",dir_blk0_nr );
+	int nr_dir_blks = ((*dir_inode)->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries =
+	  (*dir_inode)->i_size / DIR_ENTRY_SIZE; /**
+					       * including unused slots
+					       * (the file has been deleted
+					       * but the slot is still there)
+					       */
+	int m = 0;
+	
+	struct dir_entry * pde;
+	for (i = 0; i < nr_dir_blks; i++) {
+		RD_SECT((*dir_inode)->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry *)fsbuf;
+		printl("search\n");
+		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
+			printl("%s %d\n",pde->name,pde->inode_nr);
+			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
+				inode_nr= pde->inode_nr;
+			if (++m > nr_dir_entries)
+				break;
+		}
+		if (m > nr_dir_entries) /* all entries have been iterated */
+			break;
+	}
+	
+	if(inode_nr==0)
+	    return -1;
+	
+	struct inode* pin=0;
+	struct inode* old=*dir_inode;
+	pin=get_inode((*dir_inode)->i_dev,inode_nr);
+	if(pin->i_mode!=I_DIRECTORY)
+	    return -1;
 
+	*dir_inode=pin;
+	put_inode(old);
+	return 0;
 }
+

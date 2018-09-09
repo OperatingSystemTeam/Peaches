@@ -258,6 +258,9 @@ PUBLIC int do_unlink()
 			"invalid inode: %s\n", pathname);
 		return -1;
 	}
+	if(inode_nr==currentDir_inode->i_num)
+	printl("can't remove current dir %s\n", pathname);
+		return -1;
 
 	char filename[MAX_PATH];
 	struct inode * dir_inode;
