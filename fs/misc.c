@@ -68,6 +68,7 @@ PUBLIC int search_file(char * path)
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
+		printl("search\n");
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
 			printl("%s\n",pde->name);
 			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
@@ -148,3 +149,8 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	return 0;
 }
 
+
+void strip_path2_from_root(const char * pathname)
+{
+
+}

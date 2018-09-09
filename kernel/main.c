@@ -141,7 +141,7 @@ void TestA()
 	assert(rd_bytes <= strlen(bufw));
 
 	/* create */
-	dir = openDir(filename, O_CREAT );
+	dir = openDir(filename, O_CREAT);
 	assert(dir != -1);
 	printf("File created: %s (fd %d)\n", filename, fd);
 
@@ -150,37 +150,37 @@ void TestA()
 	printf("File created: %s (fd %d)\n", filename, fd);
 
 	/* write */
-	/*n = write(fd, bufw, strlen(bufw));
+	n = write(fd, bufw, strlen(bufw));
 	assert(n == strlen(bufw));
 
 	/* close */
-	/*close(fd);
+	close(fd);
 
-	/* open 
+	/* open */
 	fd = open(filename, O_RDWR);
 	assert(fd != -1);
 	printf("File opened. fd: %d\n", fd);
 
-	/* read 
+	/* read */
 	n = read(fd, bufr, rd_bytes);
 	assert(n == rd_bytes);
 	bufr[n] = 0;
 	printf("%d bytes read: %s\n", n, bufr);
 
-	/* close 
+	/* close */
 	close(fd);
-*/
-	char * filenames[] = {"/foo", "/bar", "/baz"};
+
+	char * filenames[] = {"foo", "bar", "baz"};
 
 	/* create files */
-	/*for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
+	for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
 		fd = open(filenames[i], O_CREAT | O_RDWR);
 		assert(fd != -1);
 		printf("File created: %s (fd %d)\n", filenames[i], fd);
 		close(fd);
 	}
 
-	char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
+	//char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
 
 	/* remove files */
 	/*for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
@@ -190,12 +190,12 @@ void TestA()
 			printf("Failed to remove file: %s\n", rfilenames[i]);
 	}
 */
-
-	dir = openDir("/blaa", O_RDWR);
-	assert(dir != -1);
-	printf("open dir: blaa (fd %d)\n", dir);
+dir = openDir("/", O_RDWR);
+	dir = unlink("/blaa");
+	assert(dir ==0);
+	printf("remove dir: blaa (fd %d)\n", dir);
 	
-	spin("TestB");
+	spin("TestA");
 }
 
 /*======================================================================*
@@ -204,7 +204,7 @@ void TestA()
 void TestB()
 {
 	
-	char tty_name[] = "/dev_tty1";
+	/*char tty_name[] = "/dev_tty1";
 
 	int fd_stdin  = open(tty_name, O_RDWR);
 	assert(fd_stdin  == 0);
@@ -228,9 +228,9 @@ void TestB()
 				write(fd_stdout, "}\n", 2);
 			}
 		}
-	}
-
-	assert(0); /* never arrive here */
+	}*/
+spin("TestB");
+	//assert(0); /* never arrive here */
 }
 
 

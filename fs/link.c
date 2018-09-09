@@ -26,9 +26,11 @@ void cleanDir(struct inode * dir_inode);
 {
     if (inode_nr == INVALID_INODE) {	/* file not found */
 		printl("FS::do_unlink2() returns "
-			"invalid inode\n");
+			"invalid inode  %s\n",filename);
 		return -1;
 	}
+	printl("remove %s\n",filename);
+	
 
 
 
@@ -195,6 +197,7 @@ void cleanDir(struct inode * dir_inode)
 	 * Search the dir for the file.
 	 */
 	int dir_blk0_nr = dir_inode->i_start_sect;
+	printl("sector%d\n",dir_blk0_nr );
 	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
 	int nr_dir_entries =
 	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
@@ -208,17 +211,15 @@ void cleanDir(struct inode * dir_inode)
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			
+			printl("%s %d\n",pde->name,pde->inode_nr);
 			do_unlink2(pde->inode_nr,dir_inode,pde->name);
 			
-			if (++m > nr_dir_entries)
+			if (++m >= nr_dir_entries)
 				break;
 		}
 		if (m > nr_dir_entries) /* all entries have been iterated */
 			break;
 	}
-
-	/* file not found */
 	
 }
 /*****************************************************************************
