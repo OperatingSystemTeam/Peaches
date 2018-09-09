@@ -33,6 +33,7 @@ PUBLIC int do_open();
 
 PRIVATE void openDir(struct inode * pin)
 {
+	put_inode(currentDir_inode);
     currentDir_inode=pin;
 }
 

@@ -141,10 +141,10 @@ void TestA()
 	assert(rd_bytes <= strlen(bufw));
 
 	/* create */
-	dir = openDir(filename, O_CREAT | O_RDWR);
+	/*dir = openDir(filename, O_CREAT | O_RDWR);
 	assert(dir != -1);
 	printf("File created: %s (fd %d)\n", filename, fd);
-
+*/
 	fd = open(filename, O_CREAT | O_RDWR);
 	assert(fd != -1);
 	printf("File created: %s (fd %d)\n", filename, fd);
@@ -190,7 +190,8 @@ void TestA()
 			printf("Failed to remove file: %s\n", rfilenames[i]);
 	}
 */
-	spin("TestP");
+assert(unlink("/blaa") == 0);
+	spin("TestA");
 }
 
 /*======================================================================*
