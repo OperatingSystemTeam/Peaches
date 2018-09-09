@@ -48,7 +48,6 @@ PUBLIC int search_file(char * path)
 
 	if (filename[0] == 0)	/* path: "/" */
 		return dir_inode->i_num;
-	//printl("%s\n",filename);
 
 	/**
 	 * Search the dir for the file.
@@ -67,7 +66,6 @@ PUBLIC int search_file(char * path)
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			printl("%c\n",pde->name);
 			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
 				return pde->inode_nr;
 			if (++m > nr_dir_entries)
@@ -121,7 +119,6 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 
 	if (*s == '/')
 	{
-		//printl("from root.\n");
      s++;
 	 *ppinode = root_inode;
 	}
@@ -141,7 +138,8 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	}
 	*t = 0;
 
+	
+
 	return 0;
 }
-
 

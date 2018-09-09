@@ -19,14 +19,16 @@
 #include "global.h"
 #include "keyboard.h"
 #include "proto.h"
- void cleanDir(struct inode * dir_inode);
- int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH])
+
+PRIVATE int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH])
 {
     if (inode_nr == INVALID_INODE) {	/* file not found */
 		printl("FS::do_unlink2() returns "
 			"invalid inode\n");
 		return -1;
 	}
+
+
 
 	struct inode * pin = get_inode(dir_inode->i_dev, inode_nr);
 
@@ -42,6 +44,7 @@
 		       filename);
 		return -1;
 		}
+		
 	}
 
 	if (pin->i_cnt > 1) {	/* the file was opened */
@@ -182,7 +185,7 @@
 	return 0;
 }
 
- void cleanDir(struct inode * dir_inode)
+PRIVATE void cleanDir(struct inode * dir_inode)
 {
 	int i, j;
 
@@ -214,7 +217,7 @@
 	}
 
 	/* file not found */
-	
+	return 0;
 }
 /*****************************************************************************
  *                                do_unlink
@@ -258,5 +261,5 @@ PUBLIC int do_unlink()
 	if (strip_path(filename, pathname, &dir_inode) != 0)
 		return -1;
 
-	return do_unlink2(inode_nr,dir_inode,filename);
+	do_unlink2(inode_nr,dir_inode,filename);
 }
