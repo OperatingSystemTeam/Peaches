@@ -204,7 +204,7 @@ dir = openDir("/", O_RDWR);
 void TestB()
 {
 	
-	/*char tty_name[] = "/dev_tty1";
+	char tty_name[] = "/dev_tty1";
 
 	int fd_stdin  = open(tty_name, O_RDWR);
 	assert(fd_stdin  == 0);
@@ -228,7 +228,7 @@ void TestB()
 				write(fd_stdout, "}\n", 2);
 			}
 		}
-	}*/
+	}
 spin("TestB");
 	//assert(0); /* never arrive here */
 }
