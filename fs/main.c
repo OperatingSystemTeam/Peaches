@@ -163,7 +163,7 @@ PRIVATE void init_fs()
 	assert(sb->magic == MAGIC_V1);
 	
 	root_inode = get_inode(ROOT_DEV, ROOT_INODE);
-	currentDir_inode=root_inode;
+	currentDir_inode=get_inode(ROOT_DEV, ROOT_INODE);
 	
 }
 

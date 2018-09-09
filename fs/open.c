@@ -31,10 +31,10 @@ PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect,u32 mode)
 PRIVATE void new_dir_entry(struct inode * dir_inode, int inode_nr, char * filename);
 PUBLIC int do_open();
 
-PRIVATE void openDir(struct inode * pin)
+PRIVATE void openDir(struct inode ** pin)
 {
 	put_inode(currentDir_inode);
-    currentDir_inode=pin;
+    currentDir_inode=*pin;
 }
 
 /*****************************************************************************
@@ -102,6 +102,7 @@ PUBLIC int do_open()
 		struct inode * dir_inode;
 		if (strip_path(filename, pathname, &dir_inode) != 0)
 			return -1;
+			
 		pin = get_inode(dir_inode->i_dev, inode_nr);
 	}
 
@@ -133,14 +134,15 @@ PUBLIC int do_open()
 		}
 		else if (imode == I_DIRECTORY) {
 			//打开文件夹
-			assert(mode==I_DIRECTORY);
-		openDir(pin);
+			
+		openDir( &pin);
 		}
 		else {
 			assert(pin->i_mode == I_REGULAR);
 		}
 	}
 	else {
+		printl("can't find inode! %s\n",pathname);
 		return -1;
 	}
 
@@ -165,6 +167,7 @@ PUBLIC int do_open()
  *****************************************************************************/
 PRIVATE struct inode * create_file(char * path, int flags,u32 mode)
 {
+	printl("create %s\n",path);
 	char filename[MAX_PATH];
 	struct inode * dir_inode;
 	if (strip_path(filename, path, &dir_inode) != 0)

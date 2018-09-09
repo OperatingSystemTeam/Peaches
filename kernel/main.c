@@ -141,39 +141,39 @@ void TestA()
 	assert(rd_bytes <= strlen(bufw));
 
 	/* create */
-	/*dir = openDir(filename, O_CREAT | O_RDWR);
+	dir = openDir(filename, O_CREAT );
 	assert(dir != -1);
 	printf("File created: %s (fd %d)\n", filename, fd);
-*/
+
 	fd = open(filename, O_CREAT | O_RDWR);
 	assert(fd != -1);
 	printf("File created: %s (fd %d)\n", filename, fd);
 
 	/* write */
-	n = write(fd, bufw, strlen(bufw));
+	/*n = write(fd, bufw, strlen(bufw));
 	assert(n == strlen(bufw));
 
 	/* close */
-	close(fd);
+	/*close(fd);
 
-	/* open */
+	/* open 
 	fd = open(filename, O_RDWR);
 	assert(fd != -1);
 	printf("File opened. fd: %d\n", fd);
 
-	/* read */
+	/* read 
 	n = read(fd, bufr, rd_bytes);
 	assert(n == rd_bytes);
 	bufr[n] = 0;
 	printf("%d bytes read: %s\n", n, bufr);
 
-	/* close */
+	/* close 
 	close(fd);
+*/
+	char * filenames[] = {"/foo", "/bar", "/baz"};
 
-	/*char * filenames[] = {"/foo", "/bar", "/baz"};
-
-	/* create files 
-	for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
+	/* create files */
+	/*for (i = 0; i < sizeof(filenames) / sizeof(filenames[0]); i++) {
 		fd = open(filenames[i], O_CREAT | O_RDWR);
 		assert(fd != -1);
 		printf("File created: %s (fd %d)\n", filenames[i], fd);
@@ -182,16 +182,20 @@ void TestA()
 
 	char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
 
-	/* remove files 
-	for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
+	/* remove files */
+	/*for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
 		if (unlink(rfilenames[i]) == 0)
 			printf("File removed: %s\n", rfilenames[i]);
 		else
 			printf("Failed to remove file: %s\n", rfilenames[i]);
 	}
 */
-assert(unlink("/blaa") == 0);
-	spin("TestA");
+
+	dir = openDir("/blaa", O_RDWR);
+	assert(dir != -1);
+	printf("open dir: blaa (fd %d)\n", dir);
+	
+	spin("TestB");
 }
 
 /*======================================================================*

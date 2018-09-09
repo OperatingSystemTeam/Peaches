@@ -53,6 +53,7 @@ PUBLIC int search_file(char * path)
 	 * Search the dir for the file.
 	 */
 	int dir_blk0_nr = dir_inode->i_start_sect;
+	printl("sector%d\n",dir_blk0_nr );
 	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
 	int nr_dir_entries =
 	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
@@ -61,11 +62,14 @@ PUBLIC int search_file(char * path)
 					       * but the slot is still there)
 					       */
 	int m = 0;
+	if(dir_inode==root_inode)
+			printl("from root\n");
 	struct dir_entry * pde;
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
+			printl("%s\n",pde->name);
 			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
 				return pde->inode_nr;
 			if (++m > nr_dir_entries)
@@ -119,6 +123,7 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 
 	if (*s == '/')
 	{
+		
      s++;
 	 *ppinode = root_inode;
 	}
