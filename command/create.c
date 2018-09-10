@@ -10,11 +10,18 @@
 #include "sys/global.h"
 #include "sys/keyboard.h"
 #include "sys/proto.h"
-
 int main(int argc, char * argv[])
 {
 
-	open(".ls",O_RDWR,I_REGULAR);
-	//printf("%s",buf);
+    int fd = open(argv[1],O_CREAT,I_REGULAR);
+   
+    if(fd == -1)
+    {
+        printf("Failed!\n");
+        return 0;
+    }
+	printf("create: %s \n",  argv[1],fd);
+   close(fd);
+	
 	return 0;
 }

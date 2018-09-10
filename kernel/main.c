@@ -345,6 +345,30 @@ void Init()
  *======================================================================*/
 void TestA()
 {
+
+	int fd = open("a",O_CREAT,I_DIRECTORY);
+	if(fd == -1)
+    {
+        printf("Failed!\n");
+      
+    }
+
+    
+
+
+ fd = open("a/a",O_CREAT,I_DIRECTORY);
+	if(fd == -1)
+    {
+        printf("Failed!\n");
+      
+    }
+	
+ 
+	
+
+
+
+
 	for(;;);
 }
 

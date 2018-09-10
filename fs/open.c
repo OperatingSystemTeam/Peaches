@@ -31,6 +31,7 @@ PRIVATE struct inode * new_inode(int dev, int inode_nr, int start_sect,u32 mode)
 PRIVATE void new_dir_entry(struct inode * dir_inode, int inode_nr, char * filename);
 PUBLIC int do_open();
 
+
 PRIVATE void open_Dir(struct inode ** pin)
 {
 	if(currentDir_inode->i_num!=root_inode->i_num)
@@ -52,6 +53,7 @@ PRIVATE void open_Dir(struct inode ** pin)
  *****************************************************************************/
 PUBLIC int do_open()
 {
+	
 	int fd = -1;		/* return value */
 
 	char pathname[MAX_PATH];
@@ -88,24 +90,29 @@ PUBLIC int do_open()
 		panic("f_desc_table[] is full (PID:%d)", proc2pid(pcaller));
 		
 	
-	
+	if(strcmp(pathname , ".ls") == 0)
+	{
+		return do_ls();
+	}
 
 	int inode_nr=0;
 	struct inode * pin = 0;
 	struct inode * dir_inode;
 	if(strcmp(pathname , "/") == 0)
 	{
-		printl("find root\n");
+		printl("root\n");
 		if (flags & O_CREAT) {
 		
 			printl("file exists.%s\n",pathname);
 			return -1;
 		}
 		else {
-			pin=root_inode;
+			pin=get_inode(root_inode->i_dev, root_inode->i_num);
+			open_Dir(&pin);
+			return 0;
 	    }
 	}
-	else{
+	
 		inode_nr = search_file(pathname);
 
 		//创建
@@ -130,7 +137,8 @@ PUBLIC int do_open()
 			}
 			
 		pin = get_inode(dir_inode->i_dev, inode_nr);
-	}
+		put_inode(dir_inode);
+	
 
 	}
 	
@@ -150,6 +158,11 @@ PUBLIC int do_open()
 		int imode = pin->i_mode & I_TYPE_MASK;
 
 		if (imode == I_CHAR_SPECIAL) {
+			if(mode==I_DIRECTORY)
+			{
+				printl("Wrong mode!\n");
+				return -1;
+			}
 			MESSAGE driver_msg;
 			driver_msg.type = DEV_OPEN;
 			int dev = pin->i_start_sect;
@@ -163,17 +176,28 @@ PUBLIC int do_open()
 			
 		}
 		else if (imode == I_DIRECTORY) {
-			assert(mode==I_DIRECTORY);
+			if(mode!=I_DIRECTORY)
+			{
+				printl("Wrong mode!\n");
+				return -1;
+			}
+			if(flags & O_RDWR)
 			//打开文件夹
 			open_Dir( &pin);
+			
 		}
 		else {
 			assert(pin->i_mode == I_REGULAR);
+			if(mode==I_DIRECTORY)
+			{
+				printl("Wrong mode!\n");
+				return -1;
+			}
 			//openDir( &dir_inode);
 		}
 	}
 	else {
-		printl("can't find inode! %s\n",pathname);
+		printl("can't find inode! %s inode %d\n",pathname,inode_nr);
 		return -1;
 	}
 
@@ -212,7 +236,7 @@ PRIVATE struct inode * create_file(char * path, int flags,u32 mode)
 					 free_sect_nr,mode);
 
 	new_dir_entry(dir_inode, newino->i_num, filename);
-
+    put_inode(dir_inode);
 	return newino;
 }
 

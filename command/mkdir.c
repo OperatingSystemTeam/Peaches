@@ -10,11 +10,20 @@
 #include "sys/global.h"
 #include "sys/keyboard.h"
 #include "sys/proto.h"
-
 int main(int argc, char * argv[])
 {
 
-	open(".ls",O_RDWR,I_REGULAR);
-	//printf("%s",buf);
+    int fd = open(argv[1],O_CREAT,I_DIRECTORY);
+	if(fd == -1)
+    {
+        printf("Failed!\n");
+        return 0;
+    }
+    
+
+	printf("mkdir: %s\n",  argv[1]);
+
+
+	
 	return 0;
 }

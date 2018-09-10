@@ -10,11 +10,18 @@
 #include "sys/global.h"
 #include "sys/keyboard.h"
 #include "sys/proto.h"
-
 int main(int argc, char * argv[])
 {
 
-	open(".ls",O_RDWR,I_REGULAR);
-	//printf("%s",buf);
+    int fd = open(argv[1],O_RDWR,I_DIRECTORY);
+	if(fd == -1)
+    {
+        printf("Failed!\n");
+        return 0;
+    }
+ 
+	printf("%s is successfully opened!\n",argv[1]);
+    open(".ls",O_RDWR,I_REGULAR);
+	
 	return 0;
 }

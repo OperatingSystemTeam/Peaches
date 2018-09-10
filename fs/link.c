@@ -22,8 +22,9 @@
 
 void cleanDir(struct inode * dir_inode);
 
- int do_unlink2(int inode_nr,struct inode*dir_inode,char filename[MAX_PATH])
+ int do_unlink2(int inode_nr,struct inode*dir_inode,char*filename)
 {
+	//printl("???\n");
     if (inode_nr == INVALID_INODE) {	/* file not found */
 		printl("FS::do_unlink2() returns "
 			"invalid inode  %s\n",filename);
@@ -51,7 +52,8 @@ void cleanDir(struct inode * dir_inode);
 		
 	}
 
-	if (pin->i_cnt > 1) {	/* the file was opened */
+	
+	if (pin->i_cnt > 1&&pin->i_mode!=I_DIRECTORY) {	/* the file was opened */
 		printl("cannot remove file %s, because pin->i_cnt is %d.\n",
 		       filename, pin->i_cnt);
 		return -1;
@@ -161,7 +163,7 @@ void cleanDir(struct inode * dir_inode);
 		pde = (struct dir_entry *)fsbuf;
 		int j;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			if (++m >= nr_dir_entries)
+			if (++m >nr_dir_entries)
 				break;
 
 			if (pde->inode_nr == inode_nr) {
@@ -176,7 +178,7 @@ void cleanDir(struct inode * dir_inode);
 				dir_size += DIR_ENTRY_SIZE;
 		}
 
-		if (m >= nr_dir_entries || /* all entries have been iterated OR */
+		if (m > nr_dir_entries || /* all entries have been iterated OR */
 		    flg) /* file is found */
 			break;
 	}
@@ -197,7 +199,7 @@ void cleanDir(struct inode * dir_inode)
 	 * Search the dir for the file.
 	 */
 	int dir_blk0_nr = dir_inode->i_start_sect;
-	printl("sector%d\n",dir_blk0_nr );
+	//printl("sector%d\n",dir_blk0_nr );
 	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
 	int nr_dir_entries =
 	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
@@ -206,14 +208,14 @@ void cleanDir(struct inode * dir_inode)
 					       * but the slot is still there)
 					       */
 	int m = 0;
-	printl("i_size:%d\n",nr_dir_entries);
+	//printl("i_size:%d\n",nr_dir_entries);
 
 	struct dir_entry * pde;
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			printl("%s %d\n",pde->name,pde->inode_nr);
+			//printl("%s %d\n",pde->name,pde->inode_nr);
 			do_unlink2(pde->inode_nr,dir_inode,pde->name);
 			
 			if (++m >= nr_dir_entries)
@@ -238,7 +240,7 @@ void cleanDir(struct inode * dir_inode)
 PUBLIC int do_unlink()
 {
 	char pathname[MAX_PATH];
-
+	
 	/* get parameters from the message */
 	int name_len = fs_msg.NAME_LEN;	/* length of filename */
 	int src = fs_msg.source;	/* caller proc nr. */
@@ -261,13 +263,18 @@ PUBLIC int do_unlink()
 		return -1;
 	}
 	if(inode_nr==currentDir_inode->i_num)
-	printl("can't remove current dir %s\n", pathname);
+	{printl("can't remove current dir %s\n", pathname);
 		return -1;
+	}
 
 	char filename[MAX_PATH];
 	struct inode * dir_inode;
 	if (strip_path(filename, pathname, &dir_inode) != 0)
-		return -1;
-
+			{
+				printl("strip_path fail\n");
+				return -1;
+			}
+	//printl("!!!\n");
+			
 	return do_unlink2(inode_nr,dir_inode,filename);
 }
