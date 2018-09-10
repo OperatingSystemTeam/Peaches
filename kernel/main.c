@@ -178,7 +178,7 @@ void TestA()
 	char * filenames[] = {"/a"};
 
 	/* create files */
-	for (i = 0; i < 2; i++) {
+	/*for (i = 0; i < 2; i++) {
 		fd = open(filenames[i], O_CREAT | O_RDWR,I_REGULAR);
 		assert(fd != -1);
 		printf("File created: %s (fd %d)\n", filenames[i], fd);

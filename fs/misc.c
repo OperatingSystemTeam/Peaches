@@ -24,7 +24,7 @@
 #include "hd.h"
 #include "fs.h"
 
-int open_dir(struct inode ** last,struct inode ** next,char * filename);
+int open_dir(struct inode * last,struct inode ** next,char * filename);
 
 /*****************************************************************************
  *                                search_file
@@ -148,7 +148,7 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 			t=filename;
 			printl("filename:%s\n",filename);
 			//bug 要求一个函数实现 给出1.父文件夹 2.子文件夹名 返回子文件夹的*inode。
-			if(open_dir(&last,&next,filename)==-1)
+			if(open_dir(last,&next,filename)==-1)
 			{
 				printl("open fail\n");
 				return -1;
@@ -169,15 +169,16 @@ printl("filename:%s\n",filename);
 	return 0;
 }
 //bug
-int open_dir(struct inode ** last,struct inode ** next,char * filename)
+int open_dir(struct inode * last,struct inode ** next,char * filename)
 {
+	printl("want to open%s\n",filename);
 	int i,j;
 	int inode_nr=0;
-	int dir_blk0_nr = (*last)->i_start_sect;
+	int dir_blk0_nr = (last)->i_start_sect;
 	printl("sector%d\n",dir_blk0_nr );
-	int nr_dir_blks = ((*last)->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_blks = ((last)->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
 	int nr_dir_entries =
-	  (*last)->i_size / DIR_ENTRY_SIZE; /**
+	  (last)->i_size / DIR_ENTRY_SIZE; /**
 					       * including unused slots
 					       * (the file has been deleted
 					       * but the slot is still there)
@@ -185,18 +186,20 @@ int open_dir(struct inode ** last,struct inode ** next,char * filename)
 	int m = 0;
 	printl("i_size:%d\n",nr_dir_entries);
 
-	if((*last)==root_inode)
+	if((last)==root_inode)
 			printl("From root!Sector should be %d\n",root_inode->i_start_sect);
 	struct dir_entry * pde;
 	for (i = 0; i < nr_dir_blks; i++) {
-		RD_SECT((*last)->i_dev, dir_blk0_nr + i);
+		RD_SECT((last)->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
 		printl("search\n");
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
 			printl("%s %d\n",pde->name,pde->inode_nr);
-			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
-				{inode_nr= pde->inode_nr;
-				break;
+			if (memcmp(filename, pde->name,strlen(filename)) == 0)
+				{
+					printl("find%s %d\n",pde->name,pde->inode_nr);
+					inode_nr = pde->inode_nr;
+					break;
 				}
 			if (++m >= nr_dir_entries)
 				break;
@@ -208,11 +211,11 @@ int open_dir(struct inode ** last,struct inode ** next,char * filename)
 	if(inode_nr==0)
 	    return -1;
 	
-	*next=get_inode((*last)->i_dev,inode_nr);
+	*next=get_inode((last)->i_dev,inode_nr);
 	printl("??%d\n",(*next)->i_num);
 	if((*next)->i_mode!=I_DIRECTORY)
 	    return -1;
-	put_inode(*last);
+	put_inode(last);
 	return 0;
 }
 
