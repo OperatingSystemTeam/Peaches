@@ -30,8 +30,6 @@ struct dev_drv_map {
  *
  * Remember to change SUPER_BLOCK_SIZE if the members are changed.
  */
-
-
 struct super_block {
 	u32	magic;		  /**< Magic number */
 	u32	nr_inodes;	  /**< How many inodes */
@@ -128,6 +126,7 @@ struct dir_entry {
 struct file_desc {
 	int		fd_mode;	/**< R or W */
 	int		fd_pos;		/**< Current position for R/W. */
+	int		fd_cnt;		/**< How many procs share this desc */
 	struct inode*	fd_inode;	/**< Ptr to the i-node */
 };
 
@@ -151,6 +150,3 @@ struct file_desc {
 
 	
 #endif /* _ORANGES_FS_H_ */
-
-
-

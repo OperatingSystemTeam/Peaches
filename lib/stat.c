@@ -1,9 +1,9 @@
 /*************************************************************************//**
  *****************************************************************************
- * @file   syslog.c
+ * @file   stat.c
  * @brief  
  * @author Forrest Y. Yu
- * @date   Thu Nov 20 17:02:42 2008
+ * @date   Wed May 21 21:17:21 2008
  *****************************************************************************
  *****************************************************************************/
 
@@ -21,27 +21,27 @@
 
 
 /*****************************************************************************
- *                                syslog
- *****************************************************************************/
-/**
- * Write log directly to the disk by sending message to FS.
+ *                                stat
+ *************************************************************************//**
  * 
- * @param fmt The format string.
  * 
- * @return How many chars have been printed.
+ * @param path 
+ * @param buf 
+ * 
+ * @return  On success, zero is returned. On error, -1 is returned.
  *****************************************************************************/
-PUBLIC int syslog(const char *fmt, ...)
+PUBLIC int stat(const char *path, struct stat *buf)
 {
-	int i;
-	char buf[STR_DEFAULT_LEN];
+	MESSAGE msg;
 
-	va_list arg = (va_list)((char*)(&fmt) + 4); /**
-						     * 4: size of `fmt' in
-						     *    the stack
-						     */
-	i = vsprintf(buf, fmt, arg);
-	assert(strlen(buf) == i);
+	msg.type	= STAT;
 
-	return disklog(buf);
+	msg.PATHNAME	= (void*)path;
+	msg.BUF		= (void*)buf;
+	msg.NAME_LEN	= strlen(path);
+
+	send_recv(BOTH, TASK_FS, &msg);
+	assert(msg.type == SYSCALL_RET);
+
+	return msg.RETVAL;
 }
-

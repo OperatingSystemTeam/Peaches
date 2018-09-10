@@ -1,11 +1,12 @@
 /*************************************************************************//**
  *****************************************************************************
- * @file   syslog.c
+ * @file   exit.c
  * @brief  
  * @author Forrest Y. Yu
- * @date   Thu Nov 20 17:02:42 2008
+ * @date   Tue May  6 14:25:33 2008
  *****************************************************************************
  *****************************************************************************/
+
 
 #include "type.h"
 #include "stdio.h"
@@ -21,27 +22,18 @@
 
 
 /*****************************************************************************
- *                                syslog
- *****************************************************************************/
-/**
- * Write log directly to the disk by sending message to FS.
+ *                                exit
+ *************************************************************************//**
+ * Terminate the current process.
  * 
- * @param fmt The format string.
- * 
- * @return How many chars have been printed.
+ * @param status  The value returned to the parent.
  *****************************************************************************/
-PUBLIC int syslog(const char *fmt, ...)
+PUBLIC void exit(int status)
 {
-	int i;
-	char buf[STR_DEFAULT_LEN];
+	MESSAGE msg;
+	msg.type	= EXIT;
+	msg.STATUS	= status;
 
-	va_list arg = (va_list)((char*)(&fmt) + 4); /**
-						     * 4: size of `fmt' in
-						     *    the stack
-						     */
-	i = vsprintf(buf, fmt, arg);
-	assert(strlen(buf) == i);
-
-	return disklog(buf);
+	send_recv(BOTH, TASK_MM, &msg);
+	assert(msg.type == SYSCALL_RET);
 }
-

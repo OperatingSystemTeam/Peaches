@@ -1,9 +1,9 @@
 /*************************************************************************//**
  *****************************************************************************
- * @file   syslog.c
- * @brief  
+ * @file   wait.c
+ * @brief  wait()
  * @author Forrest Y. Yu
- * @date   Thu Nov 20 17:02:42 2008
+ * @date   Tue May 20 01:23:58 2008
  *****************************************************************************
  *****************************************************************************/
 
@@ -19,29 +19,24 @@
 #include "global.h"
 #include "proto.h"
 
-
 /*****************************************************************************
- *                                syslog
+ *                                wait
  *****************************************************************************/
 /**
- * Write log directly to the disk by sending message to FS.
+ * Wait for the child process to terminiate.
  * 
- * @param fmt The format string.
+ * @param status  The value returned from the child.
  * 
- * @return How many chars have been printed.
+ * @return  PID of the terminated child.
  *****************************************************************************/
-PUBLIC int syslog(const char *fmt, ...)
+PUBLIC int wait(int * status)
 {
-	int i;
-	char buf[STR_DEFAULT_LEN];
+	MESSAGE msg;
+	msg.type   = WAIT;
 
-	va_list arg = (va_list)((char*)(&fmt) + 4); /**
-						     * 4: size of `fmt' in
-						     *    the stack
-						     */
-	i = vsprintf(buf, fmt, arg);
-	assert(strlen(buf) == i);
+	send_recv(BOTH, TASK_MM, &msg);
 
-	return disklog(buf);
+	*status = msg.STATUS;
+
+	return (msg.PID == NO_TASK ? -1 : msg.PID);
 }
-
