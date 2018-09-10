@@ -178,24 +178,24 @@ void TestA()
 	char * filenames[] = {"/a"};
 
 	/* create files */
-	/*for (i = 0; i < 2; i++) {
+	for (i = 0; i < 2; i++) {
 		fd = open(filenames[i], O_CREAT | O_RDWR,I_REGULAR);
 		assert(fd != -1);
 		printf("File created: %s (fd %d)\n", filenames[i], fd);
 		close(fd);
 	}
 
-	//char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
+	char * rfilenames[] = {"/bar", "/foo", "/baz", "/dev_tty0"};
 
 	/* remove files */
-	/*for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
+	for (i = 0; i < sizeof(rfilenames) / sizeof(rfilenames[0]); i++) {
 		if (unlink(rfilenames[i]) == 0)
 			printf("File removed: %s\n", rfilenames[i]);
 		else
 			printf("Failed to remove file: %s\n", rfilenames[i]);
 	}
-*/
-   /* dir = open("/", O_RDWR,I_DIRECTORY);
+
+    dir = open("/", O_RDWR,I_DIRECTORY);
 	
 	fd = open("blaa/blaa",O_RDWR,I_REGULAR);
 	assert(fd !=-1);
@@ -205,7 +205,7 @@ void TestA()
 	if(unlink("/blaa")!=0)
 	    printf("can't remove\n");
 	
-	*/
+	
 	spin("TestA");
 }
 
@@ -240,8 +240,8 @@ void TestB()
 			}
 		}
 	}
-spin("TestB");
-	//assert(0); /* never arrive here */
+
+	assert(0); /* never arrive here */
 }
 
 

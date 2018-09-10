@@ -86,12 +86,29 @@ PUBLIC int do_open()
 			break;
 	if (i >= NR_FILE_DESC)
 		panic("f_desc_table[] is full (PID:%d)", proc2pid(pcaller));
+		
+	
+	
 
-	int inode_nr = search_file(pathname);
-
+	int inode_nr=0;
 	struct inode * pin = 0;
 	struct inode * dir_inode;
-	//创建
+	if(strcmp(pathname , "/") == 0)
+	{
+		printl("find root\n");
+		if (flags & O_CREAT) {
+		
+			printl("file exists.%s\n",pathname);
+			return -1;
+		}
+		else {
+			pin=root_inode;
+	    }
+	}
+	else{
+		inode_nr = search_file(pathname);
+
+		//创建
 	if (flags & O_CREAT) {
 		if (inode_nr) {
 			printl("file exists.%s\n",pathname);
@@ -115,6 +132,8 @@ PUBLIC int do_open()
 		pin = get_inode(dir_inode->i_dev, inode_nr);
 	}
 
+	}
+	
 	if (pin) {
 		
 		

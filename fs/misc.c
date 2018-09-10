@@ -122,6 +122,7 @@ PUBLIC int search_file(char * path)
 PUBLIC int strip_path(char * filename, const char * pathname,
 		      struct inode** ppinode)
 {
+	printl("root:%d\n",root_inode->i_start_sect);
 	const char * s = pathname;
 	char * t = filename;
 	struct inode *last=0;
@@ -139,7 +140,7 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 		last = currentDir_inode;
 	}
 	//在此处解析	
-
+	
 	while (*s) {		/* check each character */
 		if (*s == '/')
 		{
@@ -165,7 +166,14 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 	}
 	*t = 0;
 printl("filename:%s\n",filename);
-*ppinode=last;
+if(last->i_num==root_inode->i_num)
+{
+	*ppinode=get_inode(root_inode->i_dev, root_inode->i_num);
+}
+else{
+    *ppinode=last;
+}
+
 	return 0;
 }
 //bug
