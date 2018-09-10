@@ -72,13 +72,7 @@ Bochsrc18-19行，更改为自己的地址
 
   
 
-  searchfile(path)
-
-  {
-
   
-
-  }
 
   
 

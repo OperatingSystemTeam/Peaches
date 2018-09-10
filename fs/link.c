@@ -161,7 +161,7 @@ void cleanDir(struct inode * dir_inode);
 		pde = (struct dir_entry *)fsbuf;
 		int j;
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			if (++m > nr_dir_entries)
+			if (++m >= nr_dir_entries)
 				break;
 
 			if (pde->inode_nr == inode_nr) {
@@ -176,7 +176,7 @@ void cleanDir(struct inode * dir_inode);
 				dir_size += DIR_ENTRY_SIZE;
 		}
 
-		if (m > nr_dir_entries || /* all entries have been iterated OR */
+		if (m >= nr_dir_entries || /* all entries have been iterated OR */
 		    flg) /* file is found */
 			break;
 	}
@@ -206,6 +206,8 @@ void cleanDir(struct inode * dir_inode)
 					       * but the slot is still there)
 					       */
 	int m = 0;
+	printl("i_size:%d\n",nr_dir_entries);
+
 	struct dir_entry * pde;
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);

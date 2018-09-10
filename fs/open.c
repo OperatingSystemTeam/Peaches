@@ -33,7 +33,8 @@ PUBLIC int do_open();
 
 PRIVATE void open_Dir(struct inode ** pin)
 {
-	put_inode(currentDir_inode);
+	if(currentDir_inode->i_num!=root_inode->i_num)
+	    put_inode(currentDir_inode);
     currentDir_inode=*pin;
 	printl("openDir\n");
 }
@@ -106,7 +107,10 @@ PUBLIC int do_open()
 		char filename[MAX_PATH];
 		
 		if (strip_path(filename, pathname, &dir_inode) != 0)
-			return -1;
+			{
+				printl("strip_path fail\n");
+				return -1;
+			}
 			
 		pin = get_inode(dir_inode->i_dev, inode_nr);
 	}
@@ -140,9 +144,9 @@ PUBLIC int do_open()
 			
 		}
 		else if (imode == I_DIRECTORY) {
+			assert(mode==I_DIRECTORY);
 			//打开文件夹
-			
-		open_Dir( &pin);
+			open_Dir( &pin);
 		}
 		else {
 			assert(pin->i_mode == I_REGULAR);

@@ -41,7 +41,7 @@ void assertion_failure(char *exp, char *file, char *base_file, int line);
 #endif
 
 /* lib/open.c */
-PUBLIC	int	open		(const char *pathname, int flags);
+PUBLIC int open(const char *pathname, int flags,u32 mode);
 
 /* lib/close.c */
 PUBLIC	int	close		(int fd);
