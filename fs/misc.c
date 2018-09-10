@@ -147,6 +147,7 @@ PUBLIC int strip_path(char * filename, const char * pathname,
 			*t = 0;
 			t=filename;
 			printl("filename:%s\n",filename);
+			//bug 要求一个函数实现 给出1.父文件夹 2.子文件夹名 返回子文件夹的*inode。
 			if(open_dir(&last,&next,filename)==-1)
 			{
 				printl("open fail\n");
