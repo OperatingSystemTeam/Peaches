@@ -172,6 +172,7 @@ PRIVATE void init_fs()
 
 	root_inode = get_inode(ROOT_DEV, ROOT_INODE);
 	currentDir_inode= get_inode(ROOT_DEV, ROOT_INODE);
+	strcpy(currentDir,"/");
 }
 
 /*****************************************************************************
@@ -523,7 +524,7 @@ PUBLIC struct inode * get_inode(int dev, int num)
  *****************************************************************************/
 PUBLIC void put_inode(struct inode * pinode)
 {
-	assert(pinode->i_cnt > 0);
+	if(pinode->i_cnt > 0)
 	pinode->i_cnt--;
 }
 

@@ -32,12 +32,14 @@ PRIVATE void new_dir_entry(struct inode * dir_inode, int inode_nr, char * filena
 PUBLIC int do_open();
 
 
-PRIVATE void open_Dir(struct inode ** pin)
+PRIVATE void open_Dir(struct inode ** pin,char filename[MAX_FILENAME_LEN])
 {
 	if(currentDir_inode->i_num!=root_inode->i_num)
 	    put_inode(currentDir_inode);
     currentDir_inode=*pin;
-	printl("openDir\n");
+	strcpy(currentDir,filename);
+
+	printl("openDir %s\n",filename);
 }
 
 
@@ -108,13 +110,13 @@ PUBLIC int do_open()
 		}
 		else {
 			pin=get_inode(root_inode->i_dev, root_inode->i_num);
-			open_Dir(&pin);
+			open_Dir(&pin,'/');
 			return 0;
 	    }
 	}
 	
 		inode_nr = search_file(pathname);
-
+		char filename[MAX_FILENAME_LEN];
 		//创建
 	if (flags & O_CREAT) {
 		if (inode_nr) {
@@ -128,7 +130,7 @@ PUBLIC int do_open()
 	else {
 		assert(flags & O_RDWR);
 
-		char filename[MAX_PATH];
+		
 		
 		if (strip_path(filename, pathname, &dir_inode) != 0)
 			{
@@ -183,7 +185,7 @@ PUBLIC int do_open()
 			}
 			if(flags & O_RDWR)
 			//打开文件夹
-			open_Dir( &pin);
+			open_Dir( &pin,filename);
 			
 		}
 		else {
