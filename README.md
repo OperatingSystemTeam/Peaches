@@ -64,7 +64,7 @@ Bochsrc18-19行，更改为自己的地址
 
 ## 修改
 
-inlclude/sys/global.h:改了文件系统通信message的结构，区分文件/文件夹
+#### 改了文件系统通信message的结构，区分文件/文件夹
 
 /* macros for messages */
 
@@ -106,7 +106,8 @@ inlclude/sys/global.h:改了文件系统通信message的结构，区分文件/�
 
 
 
-fs文件夹  
+#### fs文件夹  
+
 link.c  把处理通讯和unlink拆开，实现文件夹删除
 
 main.c   currentDir_inode 初始化
@@ -117,17 +118,19 @@ open.c 和link差不多，多了个openDir
 
 
 
-fs.h 超级块
+#### fs.h 超级块
 
 
 
-实现：文件夹（切换currentDir_inode、文件夹是特殊文件）
+#### 实现：
+
+文件夹（切换currentDir_inode、文件夹是特殊文件）
 
 文件夹是一个存储 dir_entry（定义在fs.h里）目录的文件
 
 
 
-主要困难
+#### 主要困难
 
 指针
 
