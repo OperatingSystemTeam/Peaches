@@ -24,6 +24,103 @@
 #include "hd.h"
 #include "fs.h"
 
+PUBLIC int do_ls()
+{
+	//char* buf=fs_msg.BUF;
+	int i;
+	int j;
+	struct inode* dir_inode=currentDir_inode;
+	int dir_blk0_nr = dir_inode->i_start_sect;
+	//printl("sector%d\n",dir_blk0_nr );
+	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries =
+	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
+					       * including unused slots
+					       * (the file has been deleted
+					       * but the slot is still there)
+					       */
+	int m = 0;
+	//printl("i_size:%d\n",nr_dir_entries);
+	//if(dir_inode==root_inode)
+			//printl("From root!Sector should be %d\n",root_inode->i_start_sect);
+	struct dir_entry * pde;
+		printl("__________________________\n");
+	for (i = 0; i < nr_dir_blks; i++) {
+		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry *)fsbuf;
+		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
+			
+			printl("%s \n",pde->name);
+			//strcat(buf,pde->name);
+			//strcat(buf,"\n");
+			if (++m >= nr_dir_entries)
+				break;
+		}
+		if (m >= nr_dir_entries) /* all entries have been iterated */
+			break;
+	}
+		printl("__________________________\n");
+	//strcat(buf,0);
+	return 0;
+}
+
+/*****************************************************************************
+ *                                do_stat
+ *************************************************************************//**
+ * Perform the stat() syscall.
+ * 
+ * @return  On success, zero is returned. On error, -1 is returned.
+ *****************************************************************************/
+PUBLIC int do_stat()
+{
+	char pathname[MAX_PATH]; /* parameter from the caller */
+	char filename[MAX_PATH]; /* directory has been stipped */
+
+	/* get parameters from the message */
+	int name_len = fs_msg.NAME_LEN;	/* length of filename */
+	int src = fs_msg.source;	/* caller proc nr. */
+	assert(name_len < MAX_PATH);
+	phys_copy((void*)va2la(TASK_FS, pathname),    /* to   */
+		  (void*)va2la(src, fs_msg.PATHNAME), /* from */
+		  name_len);
+	pathname[name_len] = 0;	/* terminate the string */
+
+	int inode_nr = search_file(pathname);
+	if (inode_nr == INVALID_INODE) {	/* file not found */
+		printl("{FS} FS::do_stat():: search_file() returns "
+		       "invalid inode: %s\n", pathname);
+		return -1;
+	}
+
+	struct inode * pin = 0;
+
+	struct inode * dir_inode;
+	if (strip_path(filename, pathname, &dir_inode) != 0) {
+		/* theoretically never fail here
+		 * (it would have failed earlier when
+		 *  search_file() was called)
+		 */
+		assert(0);
+	}
+	pin = get_inode(dir_inode->i_dev, inode_nr);
+
+	struct stat s;		/* the thing requested */
+	s.st_dev = pin->i_dev;
+	s.st_ino = pin->i_num;
+	s.st_mode= pin->i_mode;
+	s.st_rdev= is_special(pin->i_mode) ? pin->i_start_sect : NO_DEV;
+	s.st_size= pin->i_size;
+
+	put_inode(pin);
+
+	phys_copy((void*)va2la(src, fs_msg.BUF), /* to   */
+		  (void*)va2la(TASK_FS, &s),	 /* from */
+		  sizeof(struct stat));
+
+	return 0;
+}
+int open_dir(struct inode * last,struct inode ** next,char * filename);
+
 /*****************************************************************************
  *                                search_file
  *****************************************************************************/
@@ -53,6 +150,7 @@ PUBLIC int search_file(char * path)
 	 * Search the dir for the file.
 	 */
 	int dir_blk0_nr = dir_inode->i_start_sect;
+	//printl("sector%d\n",dir_blk0_nr );
 	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
 	int nr_dir_entries =
 	  dir_inode->i_size / DIR_ENTRY_SIZE; /**
@@ -61,20 +159,31 @@ PUBLIC int search_file(char * path)
 					       * but the slot is still there)
 					       */
 	int m = 0;
+	//printl("i_size:%d\n",nr_dir_entries);
+
+	//if(dir_inode==root_inode)
+			//printl("From root!Sector should be %d\n",root_inode->i_start_sect);
+			printl("searching %s\n",filename);
 	struct dir_entry * pde;
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
+		printl("__________________________\n");
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			if (memcmp(filename, pde->name, MAX_FILENAME_LEN) == 0)
-				return pde->inode_nr;
-			if (++m > nr_dir_entries)
+			printl("%s %d\n",pde->name,pde->inode_nr);
+			if (memcmp(filename, pde->name, strlen(filename)) == 0)
+				{
+
+					printl("__________________________\n");
+					return pde->inode_nr;
+				}
+			if (++m >= nr_dir_entries)
 				break;
 		}
-		if (m > nr_dir_entries) /* all entries have been iterated */
+		if (m >= nr_dir_entries) /* all entries have been iterated */
 			break;
 	}
-
+printl("__________________________\n");
 	/* file not found */
 	return 0;
 }
@@ -111,27 +220,103 @@ PUBLIC int search_file(char * path)
 PUBLIC int strip_path(char * filename, const char * pathname,
 		      struct inode** ppinode)
 {
+	//printl("root:%d\n",root_inode->i_start_sect);
 	const char * s = pathname;
 	char * t = filename;
-
+	struct inode *last=0;
+	struct inode *next=0;
 	if (s == 0)
 		return -1;
 
 	if (*s == '/')
+	{
 		s++;
-
+		last = get_inode(root_inode->i_dev, root_inode->i_num);
+	}
+	else 
+	{
+		last = get_inode(currentDir_inode->i_dev,currentDir_inode->i_num);
+	}
+	//在此处解析	
+	
 	while (*s) {		/* check each character */
 		if (*s == '/')
-			return -1;
+		{
+			
+			*t = 0;
+			t=filename;
+			//printl("filename:%s\n",filename);
+			//bug 要求一个函数实现 给出1.父文件夹 2.子文件夹名 返回子文件夹的*inode。
+			if(open_dir(last,&next,filename)==-1)
+			{
+				//printl("open fail\n");
+				return -1;
+			}
+			memset(filename, 0, MAX_FILENAME_LEN);
+			last=next;
+			s++;
+		}
+			
 		*t++ = *s++;
 		/* if filename is too long, just truncate it */
 		if (t - filename >= MAX_FILENAME_LEN)
 			break;
 	}
 	*t = 0;
+//printl("filename:%s\n",filename);
 
-	*ppinode = root_inode;
+    *ppinode=last;
 
+	return 0;
+}
+//bug
+int open_dir(struct inode * last,struct inode ** next,char * filename)
+{
+	//printl("want to open%s\n",filename);
+	int i,j;
+	int inode_nr=0;
+	int dir_blk0_nr = (last)->i_start_sect;
+	//printl("sector%d\n",dir_blk0_nr );
+	int nr_dir_blks = ((last)->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries =
+	  (last)->i_size / DIR_ENTRY_SIZE; /**
+					       * including unused slots
+					       * (the file has been deleted
+					       * but the slot is still there)
+					       */
+	int m = 0;
+	//printl("i_size:%d\n",nr_dir_entries);
+
+	//if((last)==root_inode)
+			//printl("From root!Sector should be %d\n",root_inode->i_start_sect);
+	struct dir_entry * pde;
+	for (i = 0; i < nr_dir_blks; i++) {
+		RD_SECT((last)->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry *)fsbuf;
+		//printl("search\n");
+		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
+			//printl("%s %d\n",pde->name,pde->inode_nr);
+			if (memcmp(filename, pde->name,strlen(filename)) == 0)
+				{
+					//printl("find%s %d\n",pde->name,pde->inode_nr);
+					inode_nr = pde->inode_nr;
+					break;
+				}
+			if (++m >= nr_dir_entries)
+				break;
+		}
+		if (m >= nr_dir_entries) /* all entries have been iterated */
+			break;
+	}
+	
+	if(inode_nr==0)
+	    return -1;
+	
+	*next=get_inode((last)->i_dev,inode_nr);
+	//printl("??%d\n",(*next)->i_num);
+	if((*next)->i_mode!=I_DIRECTORY)
+	    return -1;
+	put_inode(last);
 	return 0;
 }
 

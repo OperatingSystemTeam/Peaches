@@ -30,7 +30,7 @@
  * 
  * @return File descriptor if successful, otherwise -1.
  *****************************************************************************/
-PUBLIC int open(const char *pathname, int flags)
+PUBLIC int open(const char *pathname, int flags,u32 mode)
 {
 	MESSAGE msg;
 
@@ -39,9 +39,10 @@ PUBLIC int open(const char *pathname, int flags)
 	msg.PATHNAME	= (void*)pathname;
 	msg.FLAGS	= flags;
 	msg.NAME_LEN	= strlen(pathname);
-
+	msg.MODE=mode;
 	send_recv(BOTH, TASK_FS, &msg);
 	assert(msg.type == SYSCALL_RET);
 
 	return msg.FD;
 }
+

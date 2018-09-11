@@ -39,6 +39,7 @@ struct super_block {
 	u32	n_1st_sect;	  /**< Number of the 1st data sector */
 	u32	nr_inode_sects;   /**< How many inode sectors */
 	u32	root_inode;       /**< Inode nr of root directory */
+	u32 currentDir_inode;
 	u32	inode_size;       /**< INODE_SIZE */
 	u32	inode_isize_off;  /**< Offset of `struct inode::i_size' */
 	u32	inode_start_off;  /**< Offset of `struct inode::i_start_sect' */
@@ -125,6 +126,7 @@ struct dir_entry {
 struct file_desc {
 	int		fd_mode;	/**< R or W */
 	int		fd_pos;		/**< Current position for R/W. */
+	int		fd_cnt;		/**< How many procs share this desc */
 	struct inode*	fd_inode;	/**< Ptr to the i-node */
 };
 

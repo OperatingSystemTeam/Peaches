@@ -3,16 +3,16 @@
 #ENTRYPOINT	= 0x1000
 HD		= ../80m.img
 
-ASM		= nasm
+ASM		= sudo nasm
 DASM		= objdump
-CC		= gcc
-LD		= ld
+CC		= sudo gcc -m32
+LD		= sudo ld -m elf_i386
 ASMFLAGS	= -I ../include/ -f elf
 CFLAGS		= -I ../include/ -c -fno-builtin -fno-stack-protector -Wall
 LDFLAGS		= -Ttext 0x1000
 DASMFLAGS	= -D
 LIB		= ../lib/orangescrt.a
-BIN		= echo pwd
+BIN		= echo cd create rm mkdir read write ls pwd
 
 # All Phony Targets
 .PHONY : everything final clean realclean disasm all install
@@ -46,6 +46,54 @@ echo.o: echo.c ../include/type.h ../include/stdio.h
 
 echo : echo.o start.o $(LIB)
 	$(LD) $(LDFLAGS) -o $@ $?
+
+	
+cd.o: cd.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+cd : cd.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+
+rm.o: rm.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+rm : rm.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+
+write.o: write.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+write : write.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+	$(CC) $(CFLAGS) -o $@ $<
+
+
+read.o: read.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+
+read : read.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+
+mkdir.o:mkdir.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+mkdir : mkdir.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+
+create.o: create.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+create : create.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+
+ls.o: ls.c ../include/type.h ../include/stdio.h
+	$(CC) $(CFLAGS) -o $@ $<
+
+ls : ls.o start.o $(LIB)
+	$(LD) $(LDFLAGS) -o $@ $?
+
+
 
 pwd.o: pwd.c ../include/type.h ../include/stdio.h
 	$(CC) $(CFLAGS) -o $@ $<

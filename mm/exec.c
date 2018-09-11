@@ -52,7 +52,7 @@ PUBLIC int do_exec()
 	}
 
 	/* read the file */
-	int fd = open(pathname, O_RDWR);
+	int fd = open(pathname, O_RDWR,I_REGULAR);
 	if (fd == -1)
 		return -1;
 	assert(s.st_size < MMBUF_SIZE);
