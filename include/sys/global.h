@@ -56,6 +56,7 @@ EXTERN	MESSAGE			fs_msg;
 EXTERN	struct proc *		pcaller;
 EXTERN	struct inode *		root_inode;
 EXTERN	struct inode *		currentDir_inode;
+EXTERN	char 		        currentDir[MAX_FILENAME_LEN];
 extern	struct dev_drv_map	dd_map[];
 
 /* for test only */

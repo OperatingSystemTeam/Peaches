@@ -44,7 +44,7 @@ PUBLIC int do_ls()
 	//if(dir_inode==root_inode)
 			//printl("From root!Sector should be %d\n",root_inode->i_start_sect);
 	struct dir_entry * pde;
-		printl("__________________________\n");
+		printl("\n\n\n\n\n\n________________________%s________________________\n",currentDir);
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
@@ -59,7 +59,7 @@ PUBLIC int do_ls()
 		if (m >= nr_dir_entries) /* all entries have been iterated */
 			break;
 	}
-		printl("__________________________\n");
+		printl("____________________________________________________________\n");
 	//strcat(buf,0);
 	return 0;
 }
@@ -163,18 +163,18 @@ PUBLIC int search_file(char * path)
 
 	//if(dir_inode==root_inode)
 			//printl("From root!Sector should be %d\n",root_inode->i_start_sect);
-			printl("searching %s\n",filename);
+			//printl("searching %s\n",filename);
 	struct dir_entry * pde;
 	for (i = 0; i < nr_dir_blks; i++) {
 		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
 		pde = (struct dir_entry *)fsbuf;
-		printl("__________________________\n");
+		//printl("__________________________\n");
 		for (j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++,pde++) {
-			printl("%s %d\n",pde->name,pde->inode_nr);
+			//printl("%s %d\n",pde->name,pde->inode_nr);
 			if (memcmp(filename, pde->name, strlen(filename)) == 0)
 				{
 
-					printl("__________________________\n");
+					//printl("__________________________\n");
 					return pde->inode_nr;
 				}
 			if (++m >= nr_dir_entries)
@@ -183,7 +183,7 @@ PUBLIC int search_file(char * path)
 		if (m >= nr_dir_entries) /* all entries have been iterated */
 			break;
 	}
-printl("__________________________\n");
+//printl("__________________________\n");
 	/* file not found */
 	return 0;
 }
